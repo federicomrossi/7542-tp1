@@ -15,12 +15,13 @@ int calculador_multa(int consumo_tipico, int x_p, int minutos_multables)
 	return (consumo_tipico * x_p * minutos_multables);
 }
 
-void info_spliter(char *info, char *cliente/*, char *consumo_tipico, char *duracion_interrupcion*/)
-{
-	printf("%s", info);
-	//printf("%s", cliente);
-	strcpy(cliente, "hola");
-}
+// void info_spliter(char *info, char *cliente/*, char *consumo_tipico, char *duracion_interrupcion*/)
+// {
+// 	// printf("%s", info);
+// 	// //printf("%s", cliente);
+// 	// strcpy(cliente, "hola");
+// 	// printf("%s", cliente);
+// }
 
 
 
@@ -39,9 +40,11 @@ int main(int argc, char **argv)
 
  	FILE *fp;
  	char buffer[100];
- 	char *cliente[100];
- 	//char *consumo_tipico[100]; 
-	//char *duracion_interrupcion[100];
+ 	char *cliente[100], *cliente_tmp[100];
+ 	char *consumo_tipico[100]; 
+	char *duracion_interrupcion[100];
+	int cant_interrupciones = 0;
+	int minutos_interrupciones = 0;
 
  	// Apertura del archivo para lectura
  	fp = fopen(archivo, "r");
@@ -54,34 +57,44 @@ int main(int argc, char **argv)
  		exit(0);
  	}
 
+ 	*cliente_tmp = "";
+
  	while(fgets(buffer, 50, fp))
  	{
- 		info_spliter(buffer, *cliente/*, &consumo_tipico, &duracion_interrupcion*/);
+ 		*cliente = strtok(buffer, ":");
+ 		*consumo_tipico = strtok(NULL, ":");
+ 		*duracion_interrupcion = strtok(NULL, ":");
+
+ 		if (*cliente_tmp != *cliente)
+ 		{
+ 			*cliente_tmp = *cliente;
+ 			cant_interrupciones = 0;
+			minutos_interrupciones = 0;
+ 		}
+
+ 		cant_interrupciones++;
+ 		minutos_interrupciones += atoi(*duracion_interrupcion);
+
+ 		printf("%s ", *cliente);
+ 		printf("%s ", *consumo_tipico);
+ 		printf("%s", *duracion_interrupcion);
+
+ 		//		
  	}
 
- 	printf("%s", cliente);
+ 	calculador_multa(atoi(*consumo_tipico), x_p, minutos_multables); 
 
-
-	// char str[] ="- This, a sample string.";
-	// char * pch;
-	// printf ("Splitting string \"%s\" into tokens:\n",str);
-	// pch = strtok (str," ,.-");
-	// while (pch != NULL)
-	// {
-	// 	printf ("%s\n",pch);
-	// 	pch = strtok (NULL, " ,.-");
-	// }
-		
+ 	printf("%s:%d\n", , cant_interrupciones);
 	
-		// Cerramos el archivo
+	// Cerramos el archivo
 	fclose(fp);
 
 
- 	printf("\n\nx_m: %d\n", x_m);
- 	printf("x_f: %d\n", x_f);
- 	printf("x_d: %d\n", x_d);
- 	printf("x_p: %d\n", x_p);
- 	printf("archivo: %s\n", archivo);
+ 	// printf("\n\nx_m: %d\n", x_m);
+ 	// printf("x_f: %d\n", x_f);
+ 	// printf("x_d: %d\n", x_d);
+ 	// printf("x_p: %d\n", x_p);
+ 	// printf("archivo: %s\n", archivo);
 
     return 0;
 }
