@@ -96,10 +96,11 @@ int main(int argc, char **argv)
 			cant_interrupciones++;
 			minutos_multables += duracion_interrupcion;
 
+			if ((flag_tol_frecuencia) || (flag_tol_duracion_acumulada))
+				continue;
+
 			// Se supera la tolerancia por frecuencia primero
-			if ((flag_tol_frecuencia == 0) && 
-				(flag_tol_duracion_acumulada == 0) &&
-				(!filtro_tolerancia_interrupcion_por_frecuencia(x_f, cant_interrupciones)) &&
+			if ((!filtro_tolerancia_interrupcion_por_frecuencia(x_f, cant_interrupciones)) &&
 				(filtro_tolerancia_interrupcion_por_duracion_acumulada(x_d, minutos_multables)))
 			{
 				flag_tol_frecuencia = 1;
@@ -107,10 +108,8 @@ int main(int argc, char **argv)
 				minutos_multables += duracion_interrupcion;
 				printf("Se supero TOLERANCIA POR FRECUENCIA\n");
 			}
-			// Se supera la tolerancia por duración acumulada
-			else if ((flag_tol_frecuencia == 0) && 
-				(flag_tol_duracion_acumulada == 0) &&
-				(filtro_tolerancia_interrupcion_por_frecuencia(x_f, cant_interrupciones)) &&
+			// Se supera la tolerancia por duración acumulada primero
+			else if ((filtro_tolerancia_interrupcion_por_frecuencia(x_f, cant_interrupciones)) &&
 				(!filtro_tolerancia_interrupcion_por_duracion_acumulada(x_d, minutos_multables)))
 			{
 				flag_tol_duracion_acumulada = 1;
@@ -119,9 +118,15 @@ int main(int argc, char **argv)
 			}
 			// Se superan las tolerancias por frecuencia y por duración
 			// acumulada al mismo tiempo
-			// else if ()
-			// {
-			// }
+			else if ((!filtro_tolerancia_interrupcion_por_frecuencia(x_f, cant_interrupciones)) &&
+				(!filtro_tolerancia_interrupcion_por_duracion_acumulada(x_d, minutos_multables)))
+			{
+				flag_tol_frecuencia = 1;
+				flag_tol_duracion_acumulada = 1;
+				minutos_multables = 0;
+				minutos_multables += duracion_interrupcion;
+				printf("Se superaron AMBAS TOLERANCIAS A LA VEZ\n");
+			}
 		}
  	}
 
