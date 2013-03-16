@@ -9,7 +9,7 @@
 ################
 
 # Nombre del ejecutable.
-target = multas
+target = tp
 
 # Extensión de los archivos a compilar (c para C, cpp o cc o cxx para C++).
 extension = c
