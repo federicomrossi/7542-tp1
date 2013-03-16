@@ -1,5 +1,3 @@
-#include "multas.h"
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -16,22 +14,22 @@ int calculador_multa(int consumo_tipico, int x_p, int minutos_multables)
 }
 
 
+void enviar_a_salida_estandar(int num_cliente, int multa)
+{
+	printf("%d:%d\n", num_cliente, multa);
+}
+
+
 
 /* ******************************************************************
- *                        PROGRAMA PRINCIPAL
+ *                           PRIMITIVAS
  * *****************************************************************/
 
-int main(int argc, char **argv)
+void procesar_interrupciones(int x_m, int x_f, int x_d, int x_p, char *archivo)
 {
- 	// Toma de parámetros
- 	int x_m = atoi(argv[1]);
- 	int x_f = atoi(argv[2]);
- 	int x_d = atoi(argv[3]);
- 	int x_p = atoi(argv[4]);
- 	char *archivo = argv[5];
-
- 	FILE *fp;
+	FILE *fp;
  	char buffer[100];
+
  	int cliente, cliente_tmp = 0;
  	int consumo_tipico = 0; 
 	int duracion_interrupcion;
@@ -64,17 +62,12 @@ int main(int argc, char **argv)
 
 		// Evaluamos si ha cambiado el cliente
 		if((cliente != cliente_tmp) && (cliente_tmp !=0))
-		{
-			// Calculamos multa correspondiente al cliente (cliente_tmp)
-			// printf("Cliente: %d\n", cliente_tmp);
-			// printf("Interrupciones: %d\n", cant_interrupciones);
-			// printf("Acumulado: %d\n", minutos_acumulados);
-			// printf("MULTA: %d\n\n", calculador_multa(consumo_tipico, x_p, minutos_acumulados));
-						
+		{	
 			if((!flag_tol_frecuencia) && (!flag_tol_duracion_acumulada))
 				minutos_acumulados = 0;
 
-			printf("%d:%d\n", cliente_tmp, calculador_multa(consumo_tipico, x_p, minutos_acumulados));
+			// Enviamos cliente y su multa correspondiente a la salida estandar
+			enviar_a_salida_estandar(cliente_tmp, calculador_multa(consumo_tipico, x_p, minutos_acumulados));
 
 			// Establecemos el nuevo cliente como actual
 			cliente_tmp = cliente;
@@ -86,7 +79,7 @@ int main(int argc, char **argv)
 		 	minutos_acumulados = 0;
 		}
 
-		// Sensa al primer cliente de la primer interrupcion
+		// Sensamos al cliente de la primer interrupcion
 		if(cliente_tmp == 0)
 			cliente_tmp = cliente;
 
@@ -136,24 +129,16 @@ int main(int argc, char **argv)
  	}
 
  	// Si el archivo está vacío, retornamos.
- 	if(consumo_tipico == 0) exit(0);
+ 	if(consumo_tipico == 0) return;
 
  	// Procesamos al último cliente del archivo
-
-	
-	// Calculamos multa correspondiente al cliente (cliente_tmp)
-	//printf("Cliente: %d\n", cliente_tmp);
-	//printf("Interrupciones: %d\n", cant_interrupciones);
-	//printf("Acumulado: %d\n", minutos_acumulados);
-	//printf("MULTA: %d\n\n", calculador_multa(consumo_tipico, x_p, minutos_acumulados));
- 	
 	if((!flag_tol_frecuencia) && (!flag_tol_duracion_acumulada))
 		minutos_acumulados = 0;
 
- 	printf("%d:%d\n", cliente_tmp, calculador_multa(consumo_tipico, x_p, minutos_acumulados));
+ 	// Enviamos cliente y su multa correspondiente a la salida estandar
+	enviar_a_salida_estandar(cliente_tmp, calculador_multa(consumo_tipico, x_p, minutos_acumulados));
+
 	
 	// Cerramos el archivo
 	fclose(fp);
-
-    return 0;
 }

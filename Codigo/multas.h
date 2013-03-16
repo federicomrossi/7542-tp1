@@ -1,6 +1,8 @@
-#ifndef _MULTAS_H_
-#define _MULTAS_H_
+#ifndef MULTAS_H
+#define MULTAS_H
 
 
+void procesar_interrupciones(int x_m, int x_f, int x_d, int x_p, char *archivo);
 
-#endif
+
+#endif // MULTAS_H

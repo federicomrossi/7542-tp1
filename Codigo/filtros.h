@@ -36,5 +36,3 @@ _Bool filtro_tolerancia_interrupcion_por_duracion_acumulada(int x_d, int interru
 
 
 #endif // FILTROS_H
-
-
