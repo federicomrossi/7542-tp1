@@ -33,11 +33,15 @@ int main(int argc, char **argv)
  	FILE *fp;
  	char buffer[100];
  	int cliente, cliente_tmp = 0;
- 	int consumo_tipico; 
+ 	int consumo_tipico = 0; 
 	int duracion_interrupcion;
 	int cant_interrupciones = 0;
 	int minutos_acumulados = 0;
-	int minutos_multables;
+	int minutos_multables = 0;
+
+	// Flags para deteccion de tolerancias superadas
+	_Bool flag_tol_frecuencia = 0;
+	_Bool flag_tol_duracion_acumulada = 0;
 
  	// Apertura del archivo para lectura
  	fp = fopen(archivo, "r");
@@ -62,15 +66,23 @@ int main(int argc, char **argv)
 		// Evaluamos si ha cambiado el cliente
 		if((cliente != cliente_tmp) && (cliente_tmp !=0))
 		{
+			// if(flag_tolerancia_frecuencia)
+			// 	minutos_multables = minutos_acumulados;
+			// else
+			// 	minutos_multables = minutos_acumulados - x_d;
+
 			// Calculamos multa correspondiente al cliente (cliente_tmp)
-			printf("cliente: %d\n", cliente_tmp);
-			printf("Multa de %d\n", cliente_tmp);
+			printf("Cliente: %d\n", cliente_tmp);
 			printf("Interrupciones: %d\n", cant_interrupciones);
+			printf("Acumulado: %d\n", minutos_acumulados);
+			printf("MULTA: %d\n\n", calculador_multa(consumo_tipico, x_p, minutos_acumulados));
 
 			// Establecemos el nuevo cliente como actual
 			cliente_tmp = cliente;
 
 			// Re-inicializamos variables de procesamiento
+			flag_tol_frecuencia = 0;
+			flag_tol_duracion_acumulada = 0;
 		 	cant_interrupciones = 0;
 		 	minutos_acumulados = 0;
 		}
@@ -79,72 +91,56 @@ int main(int argc, char **argv)
 		if(cliente_tmp == 0)
 			cliente_tmp = cliente;
 
-		// Procesamos interrupcion del cliente
-		
 
-		cant_interrupciones++;
+		// Procesamos interrupcion del cliente
+		consumo_tipico = atoi(strtok(NULL, ":"));
+ 		duracion_interrupcion = atoi(strtok(NULL, ":"));
+		
+		// Filtramos las interrupciones momentaneas
+		if(!filtro_es_interrupcion_momentanea(x_m, duracion_interrupcion))
+		{
+			cant_interrupciones++;
+			minutos_acumulados += duracion_interrupcion;
+
+			// Se supera la tolerancia por frecuencia primero
+			if ((flag_tol_frecuencia == 0) && 
+				(flag_tol_duracion_acumulada == 0) &&
+				(!filtro_tolerancia_interrupcion_por_frecuencia(x_f, cant_interrupciones)))
+			{
+				flag_tol_frecuencia = 1;
+				minutos_acumulados = 0;
+				minutos_acumulados += duracion_interrupcion;
+				printf("Se supero TOLERANCIA POR FRECUENCIA\n");
+			}
+			// Se supera la tolerancia por duración acumulada
+			else if ((flag_tol_frecuencia == 0) && 
+				(flag_tol_duracion_acumulada == 0) &&
+				(!filtro_tolerancia_interrupcion_por_duracion_acumulada(x_d, minutos_acumulados)))
+			{
+				flag_tol_duracion_acumulada = 1;
+				minutos_acumulados -= x_d;
+				printf("Se supero TOLERANCIA POR DURACION ACUMULADA\n");
+			}
+			// Se superan las tolerancias por frecuencia y por duración
+			// acumulada al mismo tiempo
+			// else if ()
+			// {
+			// }
+		}
  	}
 
- 	// Calculamos multa correspondiente al cliente (cliente_tmp)
-	printf("cliente: %d\n", cliente_tmp);
-	printf("Multa de %d\n", cliente_tmp);
+ 	// Si el archivo está vacío, retornamos.
+ 	if(consumo_tipico == 0) exit(0);
+
+ 	// Procesamos al último cliente del archivo
+
+	
+	// Calculamos multa correspondiente al cliente (cliente_tmp)
+	printf("Cliente: %d\n", cliente_tmp);
 	printf("Interrupciones: %d\n", cant_interrupciones);
+	printf("Acumulado: %d\n", minutos_acumulados);
+	printf("MULTA: %d\n\n", calculador_multa(consumo_tipico, x_p, minutos_acumulados));
 
-
-
-
-
-
- 	// while(fgets(buffer, 50, fp))
- 	// {
- 	// 	// Separación de datos del registro
- 	// 	cliente = atoi(strtok(buffer, ":"));
-
- 	// 	// Detección de cambio de cliente en el archivo
- 	// 	if ((cliente_tmp != cliente))
- 	// 	{
- 	// 		if((cliente_tmp != 0))
- 	// 		{
- 	// 			// MODULO RESULTADO MULTA
- 	// 			if(flag_tolerancia_frecuencia)
- 	// 				minutos_multables = minutos_acumulados;
- 	// 			else
- 	// 				minutos_multables = minutos_acumulados - x_d;
-
- 	// 			printf("minutos multables: %d\n", minutos_multables);
- 	// 			printf("consumo tipico: %d\n", consumo_tipico);
- 	// 			printf("%d:%d\n", cliente_tmp, calculador_multa(consumo_tipico, x_p, minutos_multables));
- 	// 			// FIN MODULO RESULTADO MULTA
- 	// 		}
-
- 	// 		// Re-inicializamos variables en cada cambio de cliente
- 	// 		cliente_tmp = cliente;
- 	// 		cant_interrupciones = 0;
-		// 	minutos_acumulados = 0;
-
-		// 	printf("\nCLIENTE %d\n-----------------------\n", cliente);
- 	// 	}
-
- 	// 	consumo_tipico = atoi(strtok(NULL, ":"));
- 	// 	duracion_interrupcion = atoi(strtok(NULL, ":"));
-
- 	// 	// Filtramos las interrupciones momentaneas
- 	// 	if(!filtro_es_interrupcion_momentanea(x_m, duracion_interrupcion))
- 	// 	{
- 	// 		cant_interrupciones++;
-
- 	// 		minutos_acumulados += duracion_interrupcion;
-
- 	// 		if (!flag_tolerancia_frecuencia && 
- 	// 			!filtro_tolerancia_interrupcion_por_frecuencia(x_f, cant_interrupciones) && 
- 	// 			filtro_tolerancia_interrupcion_por_duracion_acumulada(x_d, minutos_acumulados))
- 	// 		{
- 	// 			flag_tolerancia_frecuencia = 1;
- 	// 			minutos_acumulados = 0;
- 	// 			minutos_acumulados += duracion_interrupcion;
- 	// 		}
- 	// 	}
- 	// }
 	
 	// Cerramos el archivo
 	fclose(fp);
