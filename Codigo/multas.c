@@ -15,14 +15,6 @@ int calculador_multa(int consumo_tipico, int x_p, int minutos_multables)
 	return (consumo_tipico * x_p * minutos_multables);
 }
 
-// void info_spliter(char *info, char *cliente/*, char *consumo_tipico, char *duracion_interrupcion*/)
-// {
-// 	// printf("%s", info);
-// 	// //printf("%s", cliente);
-// 	// strcpy(cliente, "hola");
-// 	// printf("%s", cliente);
-// }
-
 
 
 /* ******************************************************************
@@ -40,11 +32,12 @@ int main(int argc, char **argv)
 
  	FILE *fp;
  	char buffer[100];
- 	char *cliente[100], *cliente_tmp[100];
- 	char *consumo_tipico[100]; 
-	char *duracion_interrupcion[100];
+ 	int cliente, cliente_tmp = 0;
+ 	int consumo_tipico; 
+	int duracion_interrupcion;
 	int cant_interrupciones = 0;
-	int minutos_interrupciones = 0;
+	int minutos_acumulados = 0;
+	int minutos_multables;
 
  	// Apertura del archivo para lectura
  	fp = fopen(archivo, "r");
@@ -57,44 +50,104 @@ int main(int argc, char **argv)
  		exit(0);
  	}
 
- 	*cliente_tmp = "";
+ 	// inicializamos variables de procesamiento
+ 	cant_interrupciones = 0;
+ 	minutos_acumulados = 0;
+
 
  	while(fgets(buffer, 50, fp))
  	{
- 		*cliente = strtok(buffer, ":");
- 		*consumo_tipico = strtok(NULL, ":");
- 		*duracion_interrupcion = strtok(NULL, ":");
+ 		cliente = atoi(strtok(buffer, ":"));
 
- 		if (*cliente_tmp != *cliente)
- 		{
- 			*cliente_tmp = *cliente;
- 			cant_interrupciones = 0;
-			minutos_interrupciones = 0;
- 		}
+		// Evaluamos si ha cambiado el cliente
+		if((cliente != cliente_tmp) && (cliente_tmp !=0))
+		{
+			// Calculamos multa correspondiente al cliente (cliente_tmp)
+			printf("cliente: %d\n", cliente_tmp);
+			printf("Multa de %d\n", cliente_tmp);
+			printf("Interrupciones: %d\n", cant_interrupciones);
 
- 		cant_interrupciones++;
- 		minutos_interrupciones += atoi(*duracion_interrupcion);
+			// Establecemos el nuevo cliente como actual
+			cliente_tmp = cliente;
 
- 		printf("%s ", *cliente);
- 		printf("%s ", *consumo_tipico);
- 		printf("%s", *duracion_interrupcion);
+			// Re-inicializamos variables de procesamiento
+		 	cant_interrupciones = 0;
+		 	minutos_acumulados = 0;
+		}
 
- 		//		
+		// Sensa al primer cliente de la primer interrupcion
+		if(cliente_tmp == 0)
+			cliente_tmp = cliente;
+
+		// Procesamos interrupcion del cliente
+		
+
+		cant_interrupciones++;
  	}
 
- 	calculador_multa(atoi(*consumo_tipico), x_p, minutos_multables); 
+ 	// Calculamos multa correspondiente al cliente (cliente_tmp)
+	printf("cliente: %d\n", cliente_tmp);
+	printf("Multa de %d\n", cliente_tmp);
+	printf("Interrupciones: %d\n", cant_interrupciones);
 
- 	printf("%s:%d\n", , cant_interrupciones);
+
+
+
+
+
+ 	// while(fgets(buffer, 50, fp))
+ 	// {
+ 	// 	// Separación de datos del registro
+ 	// 	cliente = atoi(strtok(buffer, ":"));
+
+ 	// 	// Detección de cambio de cliente en el archivo
+ 	// 	if ((cliente_tmp != cliente))
+ 	// 	{
+ 	// 		if((cliente_tmp != 0))
+ 	// 		{
+ 	// 			// MODULO RESULTADO MULTA
+ 	// 			if(flag_tolerancia_frecuencia)
+ 	// 				minutos_multables = minutos_acumulados;
+ 	// 			else
+ 	// 				minutos_multables = minutos_acumulados - x_d;
+
+ 	// 			printf("minutos multables: %d\n", minutos_multables);
+ 	// 			printf("consumo tipico: %d\n", consumo_tipico);
+ 	// 			printf("%d:%d\n", cliente_tmp, calculador_multa(consumo_tipico, x_p, minutos_multables));
+ 	// 			// FIN MODULO RESULTADO MULTA
+ 	// 		}
+
+ 	// 		// Re-inicializamos variables en cada cambio de cliente
+ 	// 		cliente_tmp = cliente;
+ 	// 		cant_interrupciones = 0;
+		// 	minutos_acumulados = 0;
+
+		// 	printf("\nCLIENTE %d\n-----------------------\n", cliente);
+ 	// 	}
+
+ 	// 	consumo_tipico = atoi(strtok(NULL, ":"));
+ 	// 	duracion_interrupcion = atoi(strtok(NULL, ":"));
+
+ 	// 	// Filtramos las interrupciones momentaneas
+ 	// 	if(!filtro_es_interrupcion_momentanea(x_m, duracion_interrupcion))
+ 	// 	{
+ 	// 		cant_interrupciones++;
+
+ 	// 		minutos_acumulados += duracion_interrupcion;
+
+ 	// 		if (!flag_tolerancia_frecuencia && 
+ 	// 			!filtro_tolerancia_interrupcion_por_frecuencia(x_f, cant_interrupciones) && 
+ 	// 			filtro_tolerancia_interrupcion_por_duracion_acumulada(x_d, minutos_acumulados))
+ 	// 		{
+ 	// 			flag_tolerancia_frecuencia = 1;
+ 	// 			minutos_acumulados = 0;
+ 	// 			minutos_acumulados += duracion_interrupcion;
+ 	// 		}
+ 	// 	}
+ 	// }
 	
 	// Cerramos el archivo
 	fclose(fp);
-
-
- 	// printf("\n\nx_m: %d\n", x_m);
- 	// printf("x_f: %d\n", x_f);
- 	// printf("x_d: %d\n", x_d);
- 	// printf("x_p: %d\n", x_p);
- 	// printf("archivo: %s\n", archivo);
 
     return 0;
 }
