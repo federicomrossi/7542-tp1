@@ -20,6 +20,32 @@ void enviar_a_salida_estandar(int num_cliente, int multa)
 }
 
 
+FILE* archivo_abrir(char *archivo)
+{
+	FILE *fp;
+
+	// Apertura del archivo para lectura
+ 	fp = fopen(archivo, "r");
+
+ 	// Verificación de errores producidos
+ 	if (fp == NULL)
+ 	{
+ 		printf("ERROR: No ha sido posible abrir el archivo %s.\n", archivo);
+ 		// Se retorna 0 en todos los casos, a pesar de existir error.
+ 		exit(0);
+ 	}
+
+ 	return fp;
+}
+
+
+void archivo_cerrar(FILE* fp)
+{
+	fclose(fp);
+}
+
+
+
 
 /* ******************************************************************
  *                           PRIMITIVAS
@@ -36,22 +62,15 @@ void procesar_interrupciones(int x_m, int x_f, int x_d, int x_p, char *archivo)
 	int cant_interrupciones = 0;
 	int minutos_acumulados = 0;
 
-	// Flags para deteccion de tolerancias superadas
+	// Flags para detección de tolerancias superadas
 	_Bool flag_tol_frecuencia = 0;
 	_Bool flag_tol_duracion_acumulada = 0;
 
  	// Apertura del archivo para lectura
- 	fp = fopen(archivo, "r");
+ 	fp = archivo_abrir(archivo);
 
- 	// Verificación de errores producidos
- 	if (fp == NULL)
- 	{
- 		printf("Error al abrir archivo.");
- 		// Se retorna 0 en todos los casos, a pesar de existir error.
- 		exit(0);
- 	}
 
- 	// inicializamos variables de procesamiento
+ 	// Inicializamos variables de procesamiento
  	cant_interrupciones = 0;
  	minutos_acumulados = 0;
 
@@ -128,7 +147,7 @@ void procesar_interrupciones(int x_m, int x_f, int x_d, int x_p, char *archivo)
 		}
  	}
 
- 	// Si el archivo está vacío, retornamos.
+ 	// Si el archivo está vacío, no hacemos nada.
  	if(consumo_tipico == 0) return;
 
  	// Procesamos al último cliente del archivo
@@ -140,5 +159,5 @@ void procesar_interrupciones(int x_m, int x_f, int x_d, int x_p, char *archivo)
 
 	
 	// Cerramos el archivo
-	fclose(fp);
+	archivo_cerrar(fp);
 }
