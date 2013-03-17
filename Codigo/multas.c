@@ -18,9 +18,7 @@
 /* ******************************************************************
  *                       FUNCIONES AUXILIARES
  * *****************************************************************/
-
-
-
+ 
 
 // Función que realiza la apertura de un archivo.
 // PRE: archivo es el nombre (y extensión) del archivo a abrir.
@@ -68,6 +66,60 @@ void enviar_a_salida_estandar(int num_cliente, int multa)
 	// fclose(f);
 	// // END DEBUG CODE
 }
+
+//
+void evaluar_tolerancias(int x_m, int x_f, int x_d, int duracion_interrupcion, 
+	int cant_interrupciones, int *minutos_acumulados, bool *flag_tol_frecuencia, 
+	bool *flag_tol_duracion_acumulada)
+{
+	// Se supera la tolerancia por frecuencia primero
+	if ((!tolerancia_interrupcion_por_frecuencia(x_f, cant_interrupciones)) &&
+		(tolerancia_interrupcion_por_duracion_acumulada(x_d, *minutos_acumulados)))
+	{
+		*flag_tol_frecuencia = true;
+		*minutos_acumulados = 0;
+		*minutos_acumulados += duracion_interrupcion;
+	}
+	// Se supera la tolerancia por duración acumulada primero
+	else if ((tolerancia_interrupcion_por_frecuencia(x_f, cant_interrupciones)) &&
+		(!tolerancia_interrupcion_por_duracion_acumulada(x_d, *minutos_acumulados)))
+	{
+		*flag_tol_duracion_acumulada = true;
+		*minutos_acumulados -= x_d;
+	}
+	// Se superan las tolerancias por frecuencia y por duración acumulada al mismo tiempo
+	else if ((!tolerancia_interrupcion_por_frecuencia(x_f, cant_interrupciones)) &&
+		(!tolerancia_interrupcion_por_duracion_acumulada(x_d, *minutos_acumulados)))
+	{
+		*flag_tol_frecuencia = true;
+		*flag_tol_duracion_acumulada = true;
+		*minutos_acumulados = 0;
+		*minutos_acumulados += duracion_interrupcion;
+	}
+}
+
+//
+void aplicar_filtros_y_tolerancias(int x_m, int x_f, int x_d, int duracion_interrupcion, 
+	int *cant_interrupciones, int *minutos_acumulados, bool *flag_tol_frecuencia, 
+	bool *flag_tol_duracion_acumulada)
+{
+	// Filtramos las interrupciones momentaneas
+	if(!filtro_es_interrupcion_momentanea(x_m, duracion_interrupcion))
+	{
+		++*cant_interrupciones;
+		*minutos_acumulados += duracion_interrupcion;
+
+		// Evaluamos si se superon las tolerancias solo cuando no se ha
+		// sensado ninguna aún
+		if ((!(*flag_tol_frecuencia)) && (!(*flag_tol_duracion_acumulada)))
+		{
+			evaluar_tolerancias(x_m, x_f, x_d, duracion_interrupcion, 
+				*cant_interrupciones, minutos_acumulados, flag_tol_frecuencia,
+				flag_tol_duracion_acumulada);
+		}
+	}
+}
+
 
 
 
@@ -128,57 +180,27 @@ void procesar_interrupciones(int x_m, int x_f, int x_d, int x_p, char *archivo)
 		if(cliente_tmp == 0)
 			cliente_tmp = cliente;
 
-
 		// Procesamos interrupcion del cliente
 		consumo_tipico = atoi(strtok(NULL, ":"));
  		duracion_interrupcion = atoi(strtok(NULL, ":"));
 		
-		// Filtramos las interrupciones momentaneas
-		if(!filtro_es_interrupcion_momentanea(x_m, duracion_interrupcion))
-		{
-			cant_interrupciones++;
-			minutos_acumulados += duracion_interrupcion;
-
-			if ((flag_tol_frecuencia) || (flag_tol_duracion_acumulada))
-				continue;
-
-			// Evaluamos si se superon las tolerancias
-
-			// Se supera la tolerancia por frecuencia primero
-			if ((!tolerancia_interrupcion_por_frecuencia(x_f, cant_interrupciones)) &&
-				(tolerancia_interrupcion_por_duracion_acumulada(x_d, minutos_acumulados)))
-			{
-				flag_tol_frecuencia = true;
-				minutos_acumulados = 0;
-				minutos_acumulados += duracion_interrupcion;
-			}
-			// Se supera la tolerancia por duración acumulada primero
-			else if ((tolerancia_interrupcion_por_frecuencia(x_f, cant_interrupciones)) &&
-				(!tolerancia_interrupcion_por_duracion_acumulada(x_d, minutos_acumulados)))
-			{
-				flag_tol_duracion_acumulada = true;
-				minutos_acumulados -= x_d;
-			}
-			// Se superan las tolerancias por frecuencia y por duración acumulada al mismo tiempo
-			else if ((!tolerancia_interrupcion_por_frecuencia(x_f, cant_interrupciones)) &&
-				(!tolerancia_interrupcion_por_duracion_acumulada(x_d, minutos_acumulados)))
-			{
-				flag_tol_frecuencia = true;
-				flag_tol_duracion_acumulada = true;
-				minutos_acumulados = 0;
-				minutos_acumulados += duracion_interrupcion;
-			}
-		}
+		// Aplicamos filtros y evaluamos tolerancias
+		aplicar_filtros_y_tolerancias(x_m, x_f, x_d, duracion_interrupcion,
+			&cant_interrupciones, &minutos_acumulados, &flag_tol_frecuencia,
+			&flag_tol_duracion_acumulada);
  	}
 
- 	// Si el archivo está vacío, no hacemos nada.
+ 	// Si no se han procesado interrupciones, no hacemos nada.
  	if(cliente_tmp == 0) return;
 
- 	// Procesamos al último cliente del archivo
+
+ 	// Procesamos al último cliente correspondiente a la última interrupción
+ 	// almacenada en el archivo
+ 	//// Si no se ha superado ninguna de las tolerancias, anulamos los 
+ 	//// minutos acumulados
 	if((!flag_tol_frecuencia) && (!flag_tol_duracion_acumulada))
 		minutos_acumulados = 0;
-
- 	// Enviamos cliente y su multa correspondiente a la salida estandar
+ 	//// Enviamos cliente y su multa correspondiente a la salida estandar
 	enviar_a_salida_estandar(cliente_tmp, calculador_multa(consumo_tipico, x_p, minutos_acumulados));
 
 	
