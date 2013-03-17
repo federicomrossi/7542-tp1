@@ -2,11 +2,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include "filtros.h"
+#include "tolerancias.h"
 
 
 /* ******************************************************************
  *                       FUNCIONES AUXILIARES
  * *****************************************************************/
+
 
 int calculador_multa(int consumo_tipico, int x_p, int minutos_multables)
 {
@@ -20,6 +22,9 @@ void enviar_a_salida_estandar(int num_cliente, int multa)
 }
 
 
+// Función que realiza la apertura de un archivo.
+// PRE: archivo es el nombre (y extensión) del archivo a abrir.
+// POST: se devuelve el puntero al archivo.
 FILE* archivo_abrir(char *archivo)
 {
 	FILE *fp;
@@ -38,7 +43,8 @@ FILE* archivo_abrir(char *archivo)
  	return fp;
 }
 
-
+// Cierra el stream de un archivo.
+// PRE: fp es un puntero al archivo
 void archivo_cerrar(FILE* fp)
 {
 	fclose(fp);
@@ -56,26 +62,23 @@ void procesar_interrupciones(int x_m, int x_f, int x_d, int x_p, char *archivo)
 	FILE *fp;
  	char buffer[100];
 
- 	int cliente, cliente_tmp = 0;
+ 	int cliente;
  	int consumo_tipico = 0; 
 	int duracion_interrupcion;
+	// Variables auxiliares de procesamiento
+	int cliente_tmp = 0;
 	int cant_interrupciones = 0;
 	int minutos_acumulados = 0;
-
 	// Flags para detección de tolerancias superadas
 	_Bool flag_tol_frecuencia = 0;
 	_Bool flag_tol_duracion_acumulada = 0;
+
 
  	// Apertura del archivo para lectura
  	fp = archivo_abrir(archivo);
 
 
- 	// Inicializamos variables de procesamiento
- 	cant_interrupciones = 0;
- 	minutos_acumulados = 0;
-
-
- 	while(fgets(buffer, 50, fp))
+ 	while(fgets(buffer, 100, fp))
  	{
  		cliente = atoi(strtok(buffer, ":"));
 
@@ -98,7 +101,7 @@ void procesar_interrupciones(int x_m, int x_f, int x_d, int x_p, char *archivo)
 		 	minutos_acumulados = 0;
 		}
 
-		// Sensamos al cliente de la primer interrupcion
+		// Sensamos al cliente de la primer interrupción
 		if(cliente_tmp == 0)
 			cliente_tmp = cliente;
 
@@ -117,32 +120,28 @@ void procesar_interrupciones(int x_m, int x_f, int x_d, int x_p, char *archivo)
 				continue;
 
 			// Se supera la tolerancia por frecuencia primero
-			if ((!filtro_tolerancia_interrupcion_por_frecuencia(x_f, cant_interrupciones)) &&
-				(filtro_tolerancia_interrupcion_por_duracion_acumulada(x_d, minutos_acumulados)))
+			if ((!tolerancia_interrupcion_por_frecuencia(x_f, cant_interrupciones)) &&
+				(tolerancia_interrupcion_por_duracion_acumulada(x_d, minutos_acumulados)))
 			{
 				flag_tol_frecuencia = 1;
 				minutos_acumulados = 0;
 				minutos_acumulados += duracion_interrupcion;
-				////printf("Se supero TOLERANCIA POR FRECUENCIA\n");
 			}
 			// Se supera la tolerancia por duración acumulada primero
-			else if ((filtro_tolerancia_interrupcion_por_frecuencia(x_f, cant_interrupciones)) &&
-				(!filtro_tolerancia_interrupcion_por_duracion_acumulada(x_d, minutos_acumulados)))
+			else if ((tolerancia_interrupcion_por_frecuencia(x_f, cant_interrupciones)) &&
+				(!tolerancia_interrupcion_por_duracion_acumulada(x_d, minutos_acumulados)))
 			{
 				flag_tol_duracion_acumulada = 1;
 				minutos_acumulados -= x_d;
-				////printf("Se supero TOLERANCIA POR DURACION ACUMULADA\n");
 			}
-			// Se superan las tolerancias por frecuencia y por duración
-			// acumulada al mismo tiempo
-			else if ((!filtro_tolerancia_interrupcion_por_frecuencia(x_f, cant_interrupciones)) &&
-				(!filtro_tolerancia_interrupcion_por_duracion_acumulada(x_d, minutos_acumulados)))
+			// Se superan las tolerancias por frecuencia y por duración acumulada al mismo tiempo
+			else if ((!tolerancia_interrupcion_por_frecuencia(x_f, cant_interrupciones)) &&
+				(!tolerancia_interrupcion_por_duracion_acumulada(x_d, minutos_acumulados)))
 			{
 				flag_tol_frecuencia = 1;
 				flag_tol_duracion_acumulada = 1;
 				minutos_acumulados = 0;
 				minutos_acumulados += duracion_interrupcion;
-				////printf("Se superaron AMBAS TOLERANCIAS A LA VEZ\n");
 			}
 		}
  	}
