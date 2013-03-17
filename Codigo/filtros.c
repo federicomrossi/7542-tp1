@@ -21,7 +21,6 @@
 // entera de minutos de la interrupción.
 // POST: se devuelve true si debe filtrarse la interrupción o
 // false en caso contrario.
-bool filtro_es_interrupcion_momentanea(int x_m, int interrupcion)
-{
+bool filtro_es_interrupcion_momentanea(int x_m, int interrupcion) {
 	return (interrupcion <= x_m);
 }

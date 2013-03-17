@@ -32,7 +32,8 @@ bool tolerancia_interrupcion_por_frecuencia(int x_f, int interrupcion);
 // PRE: 'x_d', cantidad entera de minutos de tolerancia máxima; 
 // 'interrupcion', cantidad entera de minutos de la interrupción.
 // POST: devuelve true si no se ha superado x_d, o false en su defecto.
-bool tolerancia_interrupcion_por_duracion_acumulada(int x_d, int interrupcion);
+bool tolerancia_interrupcion_por_duracion_acumulada(int x_d, 
+	int interrupcion);
 
 
-#endif // TOLERANCIAS_H
+#endif

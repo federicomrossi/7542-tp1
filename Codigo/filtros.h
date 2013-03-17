@@ -27,4 +27,4 @@
 bool filtro_es_interrupcion_momentanea(int x_m, int interrupcion);
 
 
-#endif // FILTROS_H
+#endif

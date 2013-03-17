@@ -20,8 +20,7 @@
 // PRE: 'x_f', frecuencia máxima representada como una cantidad entera; 
 // 'interrupcion', cantidad entera de minutos de la interrupción.
 // POST: devuelve true si no se ha superado x_f, o false en su defecto.
-bool tolerancia_interrupcion_por_frecuencia(int x_f, int interrupciones)
-{
+bool tolerancia_interrupcion_por_frecuencia(int x_f, int interrupciones) {
 	return (interrupciones <= x_f);
 }
 
@@ -32,7 +31,7 @@ bool tolerancia_interrupcion_por_frecuencia(int x_f, int interrupciones)
 // PRE: 'x_d', cantidad entera de minutos de tolerancia máxima; 
 // 'interrupcion', cantidad entera de minutos de la interrupción.
 // POST: devuelve true si no se ha superado x_d, o false en su defecto.
-bool tolerancia_interrupcion_por_duracion_acumulada(int x_d, int minutos_acumulados)
-{
+bool tolerancia_interrupcion_por_duracion_acumulada(int x_d, 
+	int minutos_acumulados) {
 	return (minutos_acumulados <= x_d);
 }
