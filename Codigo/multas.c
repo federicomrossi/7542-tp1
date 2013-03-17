@@ -1,8 +1,18 @@
+/* ******************************************************************
+ *        PROCESADOR DE INTERRUPCIONES Y CALCULADOR DE MULTAS
+ * *****************************************************************/
+/* 
+ * 
+ */
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include "filtros.h"
 #include "tolerancias.h"
+
 
 
 /* ******************************************************************
@@ -10,16 +20,6 @@
  * *****************************************************************/
 
 
-int calculador_multa(int consumo_tipico, int x_p, int minutos_multables)
-{
-	return (consumo_tipico * x_p * minutos_multables);
-}
-
-
-void enviar_a_salida_estandar(int num_cliente, int multa)
-{
-	printf("%d:%d\n", num_cliente, multa);
-}
 
 
 // Función que realiza la apertura de un archivo.
@@ -50,6 +50,24 @@ void archivo_cerrar(FILE* fp)
 	fclose(fp);
 }
 
+//
+int calculador_multa(int consumo_tipico, int factor_de_multa, int minutos_multables)
+{
+	return (consumo_tipico * factor_de_multa * minutos_multables);
+}
+
+//
+void enviar_a_salida_estandar(int num_cliente, int multa)
+{
+	printf("%d:%d\n", num_cliente, multa);
+
+	// // DEBUG CODE
+	// FILE *f;
+	// f = fopen("stdout.txt","a+");
+	// fprintf (f, "%d:%d\n", num_cliente, multa);
+	// fclose(f);
+	// // END DEBUG CODE
+}
 
 
 
@@ -57,21 +75,24 @@ void archivo_cerrar(FILE* fp)
  *                           PRIMITIVAS
  * *****************************************************************/
 
+
+// 
 void procesar_interrupciones(int x_m, int x_f, int x_d, int x_p, char *archivo)
 {
+	// Variables para el tratamiento del archivo
 	FILE *fp;
  	char buffer[100];
-
+ 	// Variables auxiliares para interrupción
  	int cliente;
- 	int consumo_tipico = 0; 
+ 	int consumo_tipico = 0;
 	int duracion_interrupcion;
 	// Variables auxiliares de procesamiento
 	int cliente_tmp = 0;
 	int cant_interrupciones = 0;
 	int minutos_acumulados = 0;
 	// Flags para detección de tolerancias superadas
-	_Bool flag_tol_frecuencia = 0;
-	_Bool flag_tol_duracion_acumulada = 0;
+	bool flag_tol_frecuencia = false;
+	bool flag_tol_duracion_acumulada = false;
 
 
  	// Apertura del archivo para lectura
@@ -80,6 +101,7 @@ void procesar_interrupciones(int x_m, int x_f, int x_d, int x_p, char *archivo)
 
  	while(fgets(buffer, 100, fp))
  	{
+ 		// Tomamos el número de cliente de la interrupción
  		cliente = atoi(strtok(buffer, ":"));
 
 		// Evaluamos si ha cambiado el cliente
@@ -89,14 +111,15 @@ void procesar_interrupciones(int x_m, int x_f, int x_d, int x_p, char *archivo)
 				minutos_acumulados = 0;
 
 			// Enviamos cliente y su multa correspondiente a la salida estandar
-			enviar_a_salida_estandar(cliente_tmp, calculador_multa(consumo_tipico, x_p, minutos_acumulados));
+			enviar_a_salida_estandar(cliente_tmp, 
+				calculador_multa(consumo_tipico, x_p, minutos_acumulados));
 
 			// Establecemos el nuevo cliente como actual
 			cliente_tmp = cliente;
 
 			// Re-inicializamos variables de procesamiento
-			flag_tol_frecuencia = 0;
-			flag_tol_duracion_acumulada = 0;
+			flag_tol_frecuencia = false;
+			flag_tol_duracion_acumulada = false;
 		 	cant_interrupciones = 0;
 		 	minutos_acumulados = 0;
 		}
@@ -119,11 +142,13 @@ void procesar_interrupciones(int x_m, int x_f, int x_d, int x_p, char *archivo)
 			if ((flag_tol_frecuencia) || (flag_tol_duracion_acumulada))
 				continue;
 
+			// Evaluamos si se superon las tolerancias
+
 			// Se supera la tolerancia por frecuencia primero
 			if ((!tolerancia_interrupcion_por_frecuencia(x_f, cant_interrupciones)) &&
 				(tolerancia_interrupcion_por_duracion_acumulada(x_d, minutos_acumulados)))
 			{
-				flag_tol_frecuencia = 1;
+				flag_tol_frecuencia = true;
 				minutos_acumulados = 0;
 				minutos_acumulados += duracion_interrupcion;
 			}
@@ -131,15 +156,15 @@ void procesar_interrupciones(int x_m, int x_f, int x_d, int x_p, char *archivo)
 			else if ((tolerancia_interrupcion_por_frecuencia(x_f, cant_interrupciones)) &&
 				(!tolerancia_interrupcion_por_duracion_acumulada(x_d, minutos_acumulados)))
 			{
-				flag_tol_duracion_acumulada = 1;
+				flag_tol_duracion_acumulada = true;
 				minutos_acumulados -= x_d;
 			}
 			// Se superan las tolerancias por frecuencia y por duración acumulada al mismo tiempo
 			else if ((!tolerancia_interrupcion_por_frecuencia(x_f, cant_interrupciones)) &&
 				(!tolerancia_interrupcion_por_duracion_acumulada(x_d, minutos_acumulados)))
 			{
-				flag_tol_frecuencia = 1;
-				flag_tol_duracion_acumulada = 1;
+				flag_tol_frecuencia = true;
+				flag_tol_duracion_acumulada = true;
 				minutos_acumulados = 0;
 				minutos_acumulados += duracion_interrupcion;
 			}
@@ -147,7 +172,7 @@ void procesar_interrupciones(int x_m, int x_f, int x_d, int x_p, char *archivo)
  	}
 
  	// Si el archivo está vacío, no hacemos nada.
- 	if(consumo_tipico == 0) return;
+ 	if(cliente_tmp == 0) return;
 
  	// Procesamos al último cliente del archivo
 	if((!flag_tol_frecuencia) && (!flag_tol_duracion_acumulada))

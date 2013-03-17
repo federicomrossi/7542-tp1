@@ -15,7 +15,7 @@
 // PRE: x_f, frecuencia representada como una cantidad entera; interrupciones, cantidad entera
 // de interrupciones ocurridas.
 // POST: Devuelve true si la cantidad de interrupciones es tolerable.
-_Bool tolerancia_interrupcion_por_frecuencia(int x_f, int interrupciones)
+bool tolerancia_interrupcion_por_frecuencia(int x_f, int interrupciones)
 {
 	return (interrupciones <= x_f);
 }
@@ -27,7 +27,7 @@ _Bool tolerancia_interrupcion_por_frecuencia(int x_f, int interrupciones)
 // PRE: x_d, cantidad entera de minutos de tolerancia máxima; minutos_acumulados, cantidad entera
 // de minutos de interrupción.
 // POST: Devuelve true si la duracion acumulada es tolerable.
-_Bool tolerancia_interrupcion_por_duracion_acumulada(int x_d, int minutos_acumulados)
+bool tolerancia_interrupcion_por_duracion_acumulada(int x_d, int minutos_acumulados)
 {
 	return (minutos_acumulados <= x_d);
 }
