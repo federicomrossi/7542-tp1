@@ -49,6 +49,47 @@ void archivo_cerrar(FILE* fp) {
 	fclose(fp);
 }
 
+// Función que dada una linea del archivo que contiene el registro de 
+// interrupciones, devuelve el número de cliente correspondiente a la 
+// interrupción de dicha linea.
+// PRE: 'buffer' es un string con el formato [numero_cliente]:[consumo_tipico]:
+// [duracion_interrupcion].
+// POST: devuelve el número de cliente registrado en el string.
+int obtener_cliente(char *buffer) {
+	char cliente_str[20] = "";
+	strncpy(cliente_str, buffer, strlen(buffer) - strlen(strstr(buffer, ":")));
+	return atoi(cliente_str);	
+}
+
+// Función que dada una linea del archivo que contiene el registro de 
+// interrupciones, devuelve el consumo típico correspondiente a la 
+// interrupción de dicha linea.
+// PRE: 'buffer' es un string con el formato [numero_cliente]:[consumo_tipico]:
+// [duracion_interrupcion].
+// POST: devuelve el consumo típico registrado en el string.
+int obtener_consumo_tipico(char *buffer) {
+	char* segmento_1 = strstr(buffer, ":");
+	char* segmento_2 = strstr(++segmento_1, ":");
+	char consumo_tipico_str[20] = "";
+	strncpy(consumo_tipico_str, segmento_1, 
+		strlen(segmento_1) - strlen(segmento_2));
+	return atoi(consumo_tipico_str);	
+}
+
+// Función que dada una linea del archivo que contiene el registro de 
+// interrupciones, devuelve la duración de la interrupción correspondiente
+// a dicha linea.
+// PRE: 'buffer' es un string con el formato [numero_cliente]:[consumo_tipico]:
+// [duracion_interrupcion].
+// POST: devuelve la duración de la interrupción registrado en el string.
+int obtener_duracion_interrupcion(char *buffer) {
+	char* segmento_1 = strstr(buffer, ":");
+	char* segmento_2 = strstr(++segmento_1, ":");
+	char duracion_interrupcion_str[20] = "";
+	strcpy(duracion_interrupcion_str, ++segmento_2);
+	return atoi(duracion_interrupcion_str);	
+}
+
 // Función que calcula la multa a aplicar a un cliente.
 // PRE: 'consumo_tipico', entero que representa el consumo tipico para ese 
 // cliente; 'factor_de_multa', entero que expresa el factor de multa a 
@@ -158,7 +199,7 @@ void aplicar_filtros_y_tolerancias(int x_m, int x_f, int x_d,
 		++(*cant_interrupciones);
 		*minutos_acumulados += duracion_interrupcion;
 
-		// Evaluamos si se superon las tolerancias solo cuando no se ha
+		// Evaluamos si se superaron las tolerancias solo cuando no se ha
 		// sensado ninguna aún
 		if (!(*flag_tolerancia_superada)) {
 			evaluar_tolerancias(x_m, x_f, x_d, duracion_interrupcion,
@@ -167,6 +208,7 @@ void aplicar_filtros_y_tolerancias(int x_m, int x_f, int x_d,
 		}
 	}
 }
+
 
 
 
@@ -210,7 +252,7 @@ void procesar_interrupciones(int x_m, int x_f, int x_d, int x_p, char *file) {
 	// Procesamos linea por linea del archivo
 	while(fgets(buffer, 100, fp)) {
 		// Tomamos el número de cliente de la interrupción
-		cliente = atoi(strtok(buffer, ":"));
+		cliente = obtener_cliente(buffer);
 
 		// Evaluamos si ha cambiado el cliente
 		if ((cliente != cliente_tmp) && (cliente_tmp !=0)) {	
@@ -231,8 +273,8 @@ void procesar_interrupciones(int x_m, int x_f, int x_d, int x_p, char *file) {
 			cliente_tmp = cliente;
 
 		// Procesamos info de interrupción del cliente
-		consumo_tipico = atoi(strtok(NULL, ":"));
-		duracion_interrupcion = atoi(strtok(NULL, ":"));
+		consumo_tipico = obtener_consumo_tipico(buffer);
+		duracion_interrupcion = obtener_duracion_interrupcion(buffer);
 		
 		// Aplicamos filtros y evaluamos tolerancias
 		aplicar_filtros_y_tolerancias(x_m, x_f, x_d, duracion_interrupcion,
