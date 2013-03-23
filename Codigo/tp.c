@@ -34,6 +34,11 @@
  *		archivo: nombre de archivo (incluyendo su extensión) donde 
  *				 se registran las interrupciones y el cliente al 
  *				 que pertenece cada una de estas;
+ * 
+ * NOTA: El archivo de interrupciones debe seguir de manera estricta 
+ * el siguiente formato para cada línea de este:
+ *
+ *		[número_de_cliente]:[consumo_típico]:[duración_interrupción]
  */
 
 
@@ -56,6 +61,7 @@ int main(int argc, char **argv) {
 	int x_p = atoi(argv[4]);
 	char *archivo = argv[5];
 
+	// Enviamos a procesamiento
 	procesar_interrupciones(x_m, x_f, x_d, x_p, archivo);
 
 	return 0;
